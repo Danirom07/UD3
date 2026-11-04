@@ -1,0 +1,96 @@
+package org.example
+
+object VideojuegoDAO {
+
+    fun listarVideojuego(): List<Videojuego> {
+        val lista = mutableListOf<Videojuego>()
+        val sql = "SELECT * FROM videojuegos"
+        ConexionBD.getConnection()?.use { conn ->
+            conn.prepareStatement(sql).use { stmt ->
+                val rs = stmt.executeQuery()
+                while (rs.next()) {
+                    lista.add(Videojuego(
+                        id = rs.getInt("id"),
+                        titulo = rs.getString("titulo"),
+                        genero = rs.getString("genero"),
+                        anio = rs.getInt("anio"),
+                        nota = rs.getDouble("nota")
+                    ))
+                }
+            }
+        }
+        return lista
+    }
+
+    fun consultarVideojuegoPorId(id: Int): Videojuego? {
+        var videojuegos : Videojuego? = null
+        val sql = "SELECT * FROM videojuegos WHERE id = ?"
+        ConexionBD.getConnection()?.use { conn ->
+            conn.prepareStatement(sql).use { stmt ->
+                stmt.setInt(1, id)
+                val rs = stmt.executeQuery()
+                if (rs.next()) {
+                    videojuegos = Videojuego(
+                        id = rs.getInt("id"),
+                        titulo = rs.getString("titulo"),
+                        genero = rs.getString("genero"),
+                        anio = rs.getInt("anio"),
+                        nota = rs.getDouble("nota")
+                    )
+                }
+            }
+        }
+        return videojuegos
+    }
+
+    fun insertarVideojuego(Videojuego: Videojuego) {
+        val sql = "INSERT INTO videojuegos(titulo, genero, anio, nota) VALUES (?, ?, ?, ?)"
+        ConexionBD.getConnection()?.use { conn ->
+            conn.prepareStatement(sql).use { stmt ->
+                stmt.setString(1, Videojuego.titulo)
+                stmt.setString(2, Videojuego.genero)
+                stmt.setInt(3, Videojuego.anio)
+                stmt.setDouble(4, Videojuego.nota)
+                if (stmt.executeUpdate() > 0) {
+                    println("${Videojuego.titulo} insertada con éxito.")
+                }
+            }
+        }
+    }
+
+    fun actualizarVideojuego(videojuego: Videojuego) {
+        if (videojuego.id == null) {
+            println("Error: No se puede actualizar una videojuego sin ID.")
+            return
+        }
+        val sql = "UPDATE videojuegos SET titulo = ?, genero = ?, anio = ?, nota = ? WHERE id = ?"
+        ConexionBD.getConnection()?.use { conn ->
+            conn.prepareStatement(sql).use { stmt ->
+                stmt.setString(1, videojuego.titulo)
+                stmt.setString(2, videojuego.genero)
+                stmt.setInt(3, videojuego.anio)
+                stmt.setDouble(4, videojuego.nota)
+                stmt.setInt(5, videojuego.id)
+                if (stmt.executeUpdate() > 0) {
+                    println("Planta con ID ${videojuego.id} actualizada.")
+                } else {
+                    println("No se encontró ninguna videojuego con ID ${videojuego.id} para actualizar.")
+                }
+            }
+        }
+    }
+
+    fun eliminarVideojuego(id: Int) {
+        val sql = "DELETE FROM videojuegos WHERE id = ?"
+        ConexionBD.getConnection()?.use { conn ->
+            conn.prepareStatement(sql).use { stmt ->
+                stmt.setInt(1, id)
+                if (stmt.executeUpdate() > 0) {
+                    println("Videojuego con ID $id eliminada.")
+                } else {
+                    println("No se encontró ninguna Videojuego con ID $id para eliminar.")
+                }
+            }
+        }
+    }
+}
