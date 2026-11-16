@@ -43,7 +43,7 @@ fun main() {
         )
         val fifa = VideojuegoDAO.listarVideojuego().last { it.titulo == "fifa" }
 
-        // Actualizar planta con id=1 (Aloe Vera)
+        // Actualizar planta con id=1
         VideojuegoDAO.actualizarVideojuego(
             Videojuego(
                 id = fifa.id,
@@ -54,7 +54,7 @@ fun main() {
             )
         )
 
-        // Eliminar planta con id=2 (Lavanda)
+        // Eliminar planta con id=2
         VideojuegoDAO.eliminarVideojuego(fifa.id!!)
     } catch (e: Exception) {
         println("ERROR: ${e.message}")
