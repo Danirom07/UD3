@@ -1,33 +1,32 @@
+
 package org.example
 
-import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
 
 object ConexionBD {
-    private val dbPath = "datos/videojuegos.sqlite" // Modificar según tu fichero
-    private val dbFile = File(dbPath)
-    private val url = "jdbc:sqlite:${dbFile.absolutePath}"
+
+    private val url = "jdbc:postgresql://localhost:5432/videojuegos"
+    private val usuario = "postgres"
+    private val password = "qwerty2"
 
     fun getConnection(): Connection? {
         return try {
-            DriverManager.getConnection(url)
+            DriverManager.getConnection(url, usuario, password)
         } catch (e: SQLException) {
             println("Error al conectar con la base de datos: ${e.message}")
             null
         }
     }
 
-    // Función de prueba: verificar conexión
     fun testConnection(): Boolean {
         return getConnection()?.use { conn ->
-            println("Conexión establecida con éxito a ${dbFile.absolutePath}")
+            println("Conexión establecida con éxito a PostgreSQL")
             true
         } ?: false
     }
 
-    // Cerrar conexión (para los casos en los que no se utiliza .use)
     fun closeConnection(conn: Connection?) {
         try {
             conn?.close()

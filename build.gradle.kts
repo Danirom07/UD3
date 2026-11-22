@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     implementation("org.xerial:sqlite-jdbc:3.46.1.0")
+    implementation("org.postgresql:postgresql:42.7.7")
     testImplementation(kotlin("test"))
 }
 

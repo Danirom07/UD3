@@ -4,51 +4,75 @@ import java.sql.Connection
 
 object ListaDAO {
 
-    fun anyadirALista(idLista: Int, idVideojuego: Int, fecha: String){
+    fun insertarLista(l: Lista) {
         var conexion: Connection? = null
 
         try {
             conexion = ConexionBD.getConnection()
             conexion?.autoCommit = false
-            var lista : Videojuego? = null
-            val sql = "SELECT * FROM videojuegos WHERE id = ?"
-            val sqlLista = "INSERT INTO listas_videojuegos (id_lista, id_videojuego, fecha_añadido ) VALUES (?, ?, ?)"
-            var exsiste = false
 
+            val sql = "SELECT * FROM jugadores WHERE id_jugador = ?"
+            val sqlLista = "INSERT INTO listas (nombre, id_jugador) VALUES (?, ?)"
+            var existe = false
 
+            conexion?.prepareStatement(sql)?.use { stmt ->
+                stmt.setInt(1, l.idJugador)
+                val rs = stmt.executeQuery()
 
-                conexion?.prepareStatement(sql)?.use { stmt ->
-                    stmt.setInt(1, idVideojuego)
-                    val rs = stmt.executeQuery()
-                        if (rs.next()){
-                            exsiste = true
-                        }
-                     }
-
-                if (!exsiste){
-                    println("El id no exsiste")
-                    conexion?.rollback()
+                if (rs.next()) {
+                    existe = true
                 }
+            }
 
+            if (!existe) {
+                println("El jugador no existe")
+                conexion?.rollback()
+                return
+            }
 
             conexion?.prepareStatement(sqlLista)?.use { stmt ->
-                stmt.setInt(1, idLista)
-                stmt.setInt(2, idVideojuego)
-                stmt.setString(3, fecha)
+                stmt.setString(1, l.nombre)
+                stmt.setInt(2, l.idJugador)
                 stmt.executeUpdate()
             }
 
-
-
             conexion?.commit()
-            println("Juego insertado en lista")
+            println("Lista insertada")
+
         } catch (e: Exception) {
             conexion?.rollback()
             println("Error en la transacción. Cambios anulados.")
-        } finally {
-            conexion?.close()
-            conexion?.autoCommit = true
-        }
 
+        } finally {
+            conexion?.autoCommit = true
+            conexion?.close()
+        }
+    }
+
+    fun eliminarLista(idLista: Int) {
+        var conexion: Connection? = null
+
+        try {
+            conexion = ConexionBD.getConnection()
+            conexion?.autoCommit = false
+
+            val sql = "DELETE FROM listas WHERE id_lista = ?"
+
+            conexion?.prepareStatement(sql)?.use { stmt ->
+                stmt.setInt(1, idLista)
+                stmt.executeUpdate()
+            }
+
+            conexion?.commit()
+            println("Lista eliminada")
+
+        } catch (e: Exception) {
+            conexion?.rollback()
+            println("Error al eliminar la lista. Cambios anulados.")
+
+        } finally {
+            conexion?.autoCommit = true
+            conexion?.close()
+        }
     }
 }

@@ -1,63 +1,129 @@
 package org.example
 
-
-
 fun main() {
-    try {
-    val conn = ConexionBD.getConnection()
-    if (conn != null) {
-        println("Conectado a la BD correctamente.")
-        ConexionBD.closeConnection(conn)
-    }
-    // Listar todas las plantas
-    println("Lista de videojuegos :")
-    VideojuegoDAO.listarVideojuego().forEach {
-        println(" - [${it.id}] ${it.titulo} (${it.genero}), anio: ${it.anio} nota: ${it.nota}€")
+    var opcion: Int
 
-    }
-        // Consultar planta por ID
-        val Videojuego = VideojuegoDAO.consultarVideojuegoPorId(3)
-        if (Videojuego != null) {
-            println("videojuegos  encontrada: [${Videojuego.id}] ${Videojuego.titulo} (${Videojuego.genero}), anio: ${Videojuego.anio} nota: ${Videojuego.nota}€")
-        } else {
-            println("No se encontró ninguna videojuegos  con ese ID.")
+    do {
+        println(
+            """
+            
+            ===== CATÁLOGO DE VIDEOJUEGOS =====
+
+            --- VIDEOJUEGOS ---
+            1. Ver todos los videojuegos
+            2. Buscar videojuego por ID
+            3. Añadir videojuego
+            4. Modificar videojuego
+            5. Eliminar videojuego
+
+            --- JUGADORES ---
+            6. Crear jugador
+            7. Eliminar jugador
+
+            --- LISTAS ---
+            8. Crear lista
+            9. Eliminar lista
+            10. Añadir videojuego a una lista
+            11. Ver videojuegos de una lista
+
+            0. Salir
+            ====================================
+            """.trimIndent()
+        )
+        print("Escoge una opción: ")
+        opcion = readLine()?.toIntOrNull() ?: -1
+
+        try {
+            when (opcion) {
+                1 -> {
+                    VideojuegoDAO.listarVideojuego().forEach {
+                        println(" - [${it.id}] ${it.titulo} (${it.genero}), año: ${it.anio} nota: ${it.nota}")
+                    }
+                }
+                2 -> {
+                    print("ID: ")
+                    val id = readLine()!!.toInt()
+                    val v = VideojuegoDAO.consultarVideojuegoPorId(id)
+                    if (v != null) {
+                        println("[${v.id}] ${v.titulo} (${v.genero}), año: ${v.anio} nota: ${v.nota}")
+                    } else {
+                        println("No existe ese videojuego.")
+                    }
+                }
+                3 -> {
+                    print("Título: ")
+                    val titulo = readLine()!!
+                    print("Género: ")
+                    val genero = readLine()!!
+                    print("Año: ")
+                    val anio = readLine()!!.toInt()
+                    print("Nota: ")
+                    val nota = readLine()!!.toDouble()
+                    VideojuegoDAO.insertarVideojuego(Videojuego(titulo = titulo, genero = genero, anio = anio, nota = nota))
+                }
+                4 -> {
+                    print("ID del videojuego a modificar: ")
+                    val id = readLine()!!.toInt()
+                    print("Nuevo título: ")
+                    val titulo = readLine()!!
+                    print("Nuevo género: ")
+                    val genero = readLine()!!
+                    print("Nuevo año: ")
+                    val anio = readLine()!!.toInt()
+                    print("Nueva nota: ")
+                    val nota = readLine()!!.toDouble()
+                    VideojuegoDAO.actualizarVideojuego(Videojuego(id, titulo, genero, anio, nota))
+                }
+                5 -> {
+                    print("ID del videojuego a eliminar: ")
+                    val id = readLine()!!.toInt()
+                    VideojuegoDAO.eliminarVideojuego(id)
+                }
+                6 -> {
+                    print("Nombre: ")
+                    val nombre = readLine()!!
+                    print("Email: ")
+                    val email = readLine()!!
+                    JugadorDAO.insertarJugador(Jugador(nombre = nombre, email = email))
+                }
+                7 -> {
+                    print("ID del jugador a eliminar: ")
+                    val id = readLine()!!.toInt()
+                    JugadorDAO.eliminarJugador(id)
+                }
+                8 -> {
+                    print("Nombre de la lista: ")
+                    val nombre = readLine()!!
+                    print("ID del jugador: ")
+                    val idJugador = readLine()!!.toInt()
+                    ListaDAO.insertarLista(Lista(nombre = nombre, idJugador = idJugador))
+                }
+                9 -> {
+                    print("ID de la lista a eliminar: ")
+                    val id = readLine()!!.toInt()
+                    ListaDAO.eliminarLista(id)
+                }
+                10 -> {
+                    print("ID de la lista: ")
+                    val idLista = readLine()!!.toInt()
+                    print("ID del videojuego: ")
+                    val idVideojuego = readLine()!!.toInt()
+                    print("Fecha (AAAA-MM-DD): ")
+                    val fecha = readLine()!!
+                    ListaVideojuegoDAO.anyadirALista(idLista, idVideojuego, fecha)
+                }
+                11 -> {
+                    print("ID de la lista: ")
+                    val idLista = readLine()!!.toInt()
+                    ListaVideojuegoDAO.obtenerVideojuegosDeLista(idLista).forEach {
+                        println(" - [${it.id}] ${it.titulo} (${it.genero}), año: ${it.anio} nota: ${it.nota}")
+                    }
+                }
+                0 -> println("Adiós")
+                else -> println("Opción no válida.")
+            }
+        } catch (e: Exception) {
+            println("ERROR: ${e.message}")
         }
-
-        // Insertar planta nueva
-        VideojuegoDAO.insertarVideojuego(
-            Videojuego(
-                titulo = "Elden Ring",
-                genero = "Souls-like",
-                anio = 2022,
-                nota = 9.6
-            )
-        )
-
-        VideojuegoDAO.insertarVideojuego(
-            Videojuego(
-                titulo = "fifa",
-                genero = "deporte",
-                anio = 2022,
-                nota = 7.0
-            )
-        )
-        val fifa = VideojuegoDAO.listarVideojuego().last { it.titulo == "fifa" }
-
-        // Actualizar planta con id=1
-        VideojuegoDAO.actualizarVideojuego(
-            Videojuego(
-                id = fifa.id,
-                titulo = "fifa",
-                genero = "deportes",
-                anio = 10,
-                nota = 0.75
-            )
-        )
-
-        // Eliminar planta con id=2
-        VideojuegoDAO.eliminarVideojuego(fifa.id!!)
-    } catch (e: Exception) {
-        println("ERROR: ${e.message}")
-        e.printStackTrace()
-    }
+    } while (opcion != 0)
 }
